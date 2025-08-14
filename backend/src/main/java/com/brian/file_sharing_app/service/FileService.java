@@ -7,6 +7,7 @@ import com.brian.file_sharing_app.repository.ChunkedFileRepository;
 import com.brian.file_sharing_app.repository.FileRepository;
 import com.brian.file_sharing_app.repository.SharedBundleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
