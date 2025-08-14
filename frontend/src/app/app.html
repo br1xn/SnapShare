@@ -1,0 +1,83 @@
+<div class="app-container">
+
+  <!-- Background Blobs -->
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <h1>File Share</h1>
+    <p>Simple, secure file sharing</p>
+  </header>
+
+  <!-- Main Content -->
+  <div class="content-wrapper">
+    <div class="content-grid">
+
+      <!-- Upload Section -->
+      <section class="card upload-section">
+        <h2 class="section-title">Upload a File</h2>
+        <div class="drop-zone" (drop)="onFileDrop($event)" (dragover)="onDragOver($event)">
+          <p class="drop-text">Drag & drop your files here</p>
+          <input type="file" id="fileInput" class="file-input" multiple (change)="onFileSelected($event)" />
+          <button class="action-button" (click)="triggerFileSelect()">Select File</button>
+        </div>
+
+        <!-- File List Box -->
+        <div *ngIf="selectedFiles.length > 0" class="file-list-box">
+          <h3>Selected Files ({{ selectedFiles.length }})</h3>
+          <ul>
+            <li *ngFor="let file of selectedFiles">
+              <span class="file-name">{{ file.name }}</span>
+              <span class="file-size-col">({{ getFileSize(file.size) }})</span>
+              <button class="remove-button" (click)="removeFile(file)">✕</button>
+            </li>
+          </ul>
+          <p class="total-size">Total Size: {{ getTotalSize() }}</p>
+        </div>
+
+        <button *ngIf="selectedFiles.length > 0" class="action-button upload-all-button" type="button" (click)="uploadFiles()">Upload</button>
+
+        <!-- Upload Message -->
+        <p class="message success" *ngIf="uploadMessage">{{ uploadMessage }}</p>
+        <div *ngIf="uploadedOtp" class="otp-box">
+          Your OTP: <strong>{{ uploadedOtp }}</strong>
+
+        </div>
+      </section>
+
+      <!-- Download section -->
+      <div class="download-section-container">
+        <!-- Receive Button -->
+        <button class="receive-button" (click)="showDownloadSection = true" *ngIf="!showDownloadSection">
+          Receive a File
+        </button>
+
+        <!-- Download -->
+        <section class="card download-section" *ngIf="showDownloadSection">
+          <h2 class="section-title">Download the File</h2>
+          <div class="download-form">
+            <input type="text" [(ngModel)]="downloadOtpInput" placeholder="Enter OTP" class="input-field" />
+
+
+            <!-- Progress Bar -->
+            <div class="progress-bar" *ngIf="downloading">
+              <div class="progress" [style.width.%]="progress"></div>
+            </div>
+
+            <button class="action-button" (click)="startDownload()" [disabled]="downloading">
+              {{ downloading ? 'Downloading...' : 'Download' }}
+            </button>
+          </div>
+
+          <p class="message success" *ngIf="downloadMessage">{{ downloadMessage }}</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    @ Brian Biju
+  </footer>
+</div>
