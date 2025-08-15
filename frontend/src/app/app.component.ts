@@ -22,7 +22,7 @@ export class AppComponent {
 
   private BACKEND_URL = window.location.origin.includes('localhost')
     ? 'http://localhost:8080'
-    : 'https://your-backend-service.onrender.com';
+    : 'https://snapshare-backend-eah4.onrender.com';
 
   constructor(private http: HttpClient) {}
 
