@@ -20,7 +20,9 @@ export class AppComponent {
   downloading: boolean = false;
   progress: number = 0;
 
-  private BACKEND_URL = 'http://localhost:8080';
+  private BACKEND_URL = window.location.origin.includes('localhost')
+    ? 'http://localhost:8080'
+    : 'https://your-backend-service.onrender.com';
 
   constructor(private http: HttpClient) {}
 

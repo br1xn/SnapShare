@@ -21,7 +21,7 @@ import java.util.Map;
 /* API endpoints for creating shared bundles, uploading files and downloading*/
 @RestController
 @RequestMapping("/api/files")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class FileController{
 
     @Autowired
