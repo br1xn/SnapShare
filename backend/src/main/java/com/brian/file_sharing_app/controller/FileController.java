@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -21,7 +23,7 @@ import java.util.Map;
 /* API endpoints for creating shared bundles, uploading files and downloading*/
 @RestController
 @RequestMapping("/api/files")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "https://snapshare-frontend.onrender.com")
 public class FileController{
 
     @Autowired
@@ -81,20 +83,25 @@ public class FileController{
 
     // Downloading shared file or files
     @GetMapping("/download/{otp}")
-    public ResponseEntity<?> downloadFile(@PathVariable String otp){
+    public ResponseEntity<StreamingResponseBody> downloadFiles(@PathVariable String otp){
+        HttpHeaders headers = new HttpHeaders();
         try{
-            byte[] zipBytes = fileService.createZipArchive(otp);
-            if (zipBytes == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid or expired OTP");
-            }
+            StreamingResponseBody responseBody = outputStream -> {
+                try {
+                    fileService.streamZipArchive(otp, outputStream);
+                } catch (IOException e) {
+                    throw new RuntimeException("Error streaming zip archive", e);
+                }
+            };
 
-            HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentDisposition(ContentDisposition.attachment().filename("files_" + otp + ".zip").build());
 
-            return new ResponseEntity<>(zipBytes, headers, HttpStatus.OK);
-        }catch(IOException e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error while downloading the file");
+            return new ResponseEntity<>(responseBody, headers, HttpStatus.OK);
+
+        } catch(Exception e){
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<>(outputStream -> outputStream.write(("Error: " + e.getMessage()).getBytes()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

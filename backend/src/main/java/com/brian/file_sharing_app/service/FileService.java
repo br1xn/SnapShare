@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +25,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.stream.Collectors;
 
 @Service
 public class FileService {
@@ -138,18 +140,18 @@ public class FileService {
     }
 
     // Creating the zip file
-    public byte[] createZipArchive(String otp) throws IOException {
+    @Transactional
+    public void streamZipArchive(String otp, OutputStream outputStream) throws IOException {
         SharedBundle sharedBundle = sharedBundleRepository.findByOtp(otp).filter(bundle -> bundle.getExpiryTime().isAfter(LocalDateTime.now()))
                 .orElse(null);
 
         if (sharedBundle == null) {
-            return null;
+            throw new IOException("Invalid or expired OTP");
         }
 
         List<FileEntity> files = fileRepository.findBySharedBundle(sharedBundle);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+        try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
             for (FileEntity fileEntity : files) {
                 Path filePath = Paths.get(fileEntity.getFilePath());
                 if (Files.exists(filePath)) {
@@ -161,14 +163,11 @@ public class FileService {
             }
         }
 
-        // Cleanup after download
         for (FileEntity fileEntity : files) {
-            Files.deleteIfExists(Paths.get(fileEntity.getFilePath())); // Delete file from disk
-            fileRepository.delete(fileEntity); // Delete metadata from database
+            Files.deleteIfExists(Paths.get(fileEntity.getFilePath()));
+            fileRepository.delete(fileEntity);
         }
 
         sharedBundleRepository.delete(sharedBundle);
-
-        return baos.toByteArray();
     }
 }
