@@ -1,0 +1,2 @@
+java -jar target/file-sharing-app-0.0.1-SNAPSHOT.jar
+ng serve
